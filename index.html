@@ -32,7 +32,7 @@ body{background:#d8eaf6;display:flex;flex-direction:column;align-items:center;
 
 /* 게임 영역: 유리박스가 꽉 차게 */
 #game-area{position:relative;width:100%;background:transparent}
-#cc{position:relative;cursor:crosshair;touch-action:none;width:100%}
+#cc{position:relative;cursor:crosshair;touch-action:none;width:100%;overflow:hidden}
 #gc{display:block;width:100%;height:auto}
 /* 유리박스 오버레이 */
 #glass{position:absolute;top:0;left:0;width:100%;height:100%;
@@ -271,13 +271,15 @@ let DROP_Y=0;
 
 function setCanvas(){
   // 모바일 완벽 대응
+  // game-area의 clientWidth를 최우선 사용 (padding 이미 반영된 값)
   const wrap = document.getElementById('wrap');
   const gameArea = document.getElementById('game-area');
-  // 가장 신뢰할 수 있는 값: wrap의 실제 너비
-  let areaW = wrap.getBoundingClientRect().width ||
-              wrap.clientWidth ||
-              gameArea.clientWidth ||
-              (window.innerWidth - 32);
+  let areaW = gameArea.clientWidth;
+  if(!areaW || areaW < 50){
+    // fallback: wrap 너비에서 padding 빼기 (좌우 16px씩 = 32px)
+    const wrapW = wrap.getBoundingClientRect().width || wrap.clientWidth || window.innerWidth;
+    areaW = wrapW - 32;
+  }
   if(!areaW || areaW < 50) areaW = Math.min(window.innerWidth, 420) - 32;
   areaW = Math.max(250, Math.floor(areaW));
 
@@ -286,9 +288,9 @@ function setCanvas(){
 
   cv.width = CW;
   cv.height = CH;
-  cv.style.width = CW + 'px';
+  cv.style.width = '100%';
   cv.style.height = CH + 'px';
-  document.getElementById('cc').style.width = CW + 'px';
+  // cc는 CSS width:100%를 유지 (부모와 동일한 너비)
   document.getElementById('cc').style.height = CH + 'px';
   document.getElementById('gl').style.height = CH + 'px';
 
